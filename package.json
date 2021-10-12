@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "A nwjs-vue application",
-  "author": "XboxBedrock <68715625+XboxBedrock@users.noreply.github.com>",
+  "author": "SushrutPola, PrajwalVandana",
   "scripts": {
     "build": "tsc && node .nwjs-vue/prod-builder.js",
     "dev": "tsc && node .nwjs-vue/dev-runner.js"
