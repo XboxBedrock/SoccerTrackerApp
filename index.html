@@ -1,8 +1,16 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link rel="stylesheet" href="styles.css"></link>
 
-<button onclick="test()"> connect <button >
-<button id="askdata" type="button" > red </button >
-<script src="script.js"></script>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
 
-</html >
+  </head>
+    <title>Hello World!</title>
+    <center><text class='maintitle'>Hello World!</text></center>
+    <a href="ports.html"><button id="Pair Device" class="button">Connect</button></a>
+  <script src="renderer.js"></script>
+</html>

@@ -1,0 +1,28 @@
+{
+    "name": "soccertrackerapp",
+    "version": "1.0.0",
+    "description": "SoccerTracker",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/XboxBedrock/SoccerTrackerApp.git"
+    },
+    "author": "Sushrut Pola, Prajwal Vandana",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/XboxBedrock/SoccerTrackerApp/issues"
+    },
+    "homepage": "https://github.com/XboxBedrock/SoccerTrackerApp#readme",
+    "devDependencies": {
+        "electron": "^15.1.2"
+    },
+    "dependencies": {
+        "bytenode": "^1.3.3",
+        "serialport": "github:GazHank/node-serialport#napi",
+        "serialport-monorepo": "github:GazHank/node-serialport#napi",
+        "tablify": "^0.1.5"
+    }
+}
