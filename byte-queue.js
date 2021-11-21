@@ -19,7 +19,6 @@
 //     }
 // }
 
-
 // module.exports.SerialPortQueue = class SerialPortQueue {
 //     constructor(serialport){
 //         this.queue = [];
