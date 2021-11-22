@@ -4,7 +4,6 @@ const tableify = require('tableify')
 const fs = require('fs')
 const byteQueue = require('./byte-queue')
 const noiseFilter = require('./noise-filter')
-const struct = require("./struct")
 
 const manufacturerId = '2E8A'
 let portIsOpen = false
