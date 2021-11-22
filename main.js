@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require('electron')
+// install electron-rebuild
 const path = require('path')
 const url = require('url')
 

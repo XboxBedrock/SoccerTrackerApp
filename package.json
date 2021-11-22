@@ -24,8 +24,9 @@
         "ahrs": "^1.3.0",
         "bytenode": "^1.3.3",
         "heatmap.js": "^2.0.5",
-        "serialport-monorepo": "github:GazHank/node-serialport#napi",
+        "python-struct": "^1.1.3",
         "serialport": "github:GazHank/node-serialport#napi",
+        "serialport-monorepo": "github:GazHank/node-serialport#napi",
         "tableify": "^1.1.0"
     }
 }
