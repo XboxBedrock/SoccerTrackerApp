@@ -35,8 +35,6 @@
         "prettier": "^2.4.1",
         "serialport": "github:GazHank/node-serialport#napi",
         "serialport-monorepo": "github:GazHank/node-serialport#napi",
-        "structjs": "^0.2.2",
-        "tableify": "^1.1.0",
-        "tablify": "^0.1.5"
+        "tableify": "^1.1.0"
     }
 }
