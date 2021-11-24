@@ -1,19 +1,73 @@
 const Serialport = require('serialport/packages/serialport')
 const ByteLength = require('serialport/packages/parser-byte-length')
+const Readline = require('serialport/packages/parser-readline')
 const tableify = require('tableify')
 const fs = require('fs')
-const byteQueue = require('./byte-queue')
-const noiseFilter = require('./noise-filter')
+const { parse } = require('path')
+const { throws } = require('assert')
 
-const manufacturerId = '2E8A'
+const MANUFACTURER_ID = '2E8A'
 let portIsOpen = false
-let port
 
-let msgQueue = new byteQueue.ByteQueue()
-let bytesAvailable = 0
+class NTimeParser {
+  constructor(port, parser, callback, maxUses) {
+    this.parser = port.pipe(parser)
+    this.numUses = 0
+    parser.on('data', data => {
+      callback(data)
+      this.numUses++
+      if (this.numUses === maxUses) {
+        this.parser.removeAllListeners()
+      }
+    })
+  }
+}
+
+class OneTimeParser {
+  constructor(port, parser, callback) {
+    NTimeParser(port, parser, callback, 1)
+  }
+}
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+function waitForBytes(port, numBytes, sleepTime, timeout = 0) {
+  let data
+  let timeElapsed = 0
+  while (true) {
+    if ((data = port.read(numBytes)) !== null) {
+      return data
+    } else {
+      await sleep(sleepTime)
+      timeElapsed += sleepTime
+      if ((timeout !== 0) && (timeElapsed >= timeout)) {
+        return null
+      }
+    }
+  }
+}
+
+function waitForLine(port, sleepTime, timeout = 0) {
+  let dataSoFar
+  let newData
+  let timeElapsed = 0
+  while (true) {
+    if ((newData = port.read(1)) !== null) {
+      dataSoFar += newData
+      if (dataSoFar[dataSoFar.length - 1] === '\n') {
+        return { data: dataSoFar, timedOut: false }
+      }
+    } else {
+      await sleep(sleepTime)
+      timeElapsed += sleepTime
+      if ((timeout !== 0) && (timeElapsed >= timeout)) {
+        return { data: dataSoFar, timedOut: true }
+      }
+    }
+  }
 }
 
 async function listSerialPorts() {
@@ -29,7 +83,7 @@ async function listSerialPorts() {
 
     const validPorts = [] // list of soccer tracker ports
     ports.forEach((device) => {
-      if (device.vendorId === manufacturerId) validPorts.push(device)
+      if (device.vendorId === MANUFACTURER_ID) validPorts.push(device)
     })
 
     if (validPorts.length === 0) { //
@@ -39,21 +93,45 @@ async function listSerialPorts() {
         'More than one compatible device found.'
     } else {
       portIsOpen = true
-      port = new Serialport(validPorts[0].path, {
+      let port = new Serialport(validPorts[0].path, {
         baudRate: 9600,
         autoOpen: true
       })
-      // let messageQueue = new serialportQueue.SerialPortQueue(port);
-      port.pipe(new ByteLength({length: 1})).on('data', data => {
-        msgQueue.push(data.toString('utf8'))
-        bytesAvailable += data.length
-      })
       port.write('flash\n')
-      await sleep(1000)
-      console.log(msgQueue.getBytes(4))
+      console.log(waitForBytes(port, 4, 10))
+
+      // const parser = port.pipe(new ByteLength({length: 4}))
+      // parser.on('data', data => {
+      //   console.log(data.toString('utf8'))
+      //   parser.removeEventListener('data', this)
+      // })
+      // OneTimeParser(port, new ByteLength({ length: 4 }), data => {
+      //   console.log(data.toString('utf8'))
+      // })
 
       document.getElementById('error').innerHTML = 'Port has connected and flashed' // debug
       port.write('sendfiles\n')
+
+      numFiles = Number(waitForLine(port, 10))  // number of files
+      for (let i = 0; i < numFiles; i++) {
+        let fileName = waitForLine(port, 10)
+        fileName = fileName.toString.slice(0, -1)
+        let fileSize = Number(waitForLine(port, 10))
+        fs.writeFileSync(
+          'sessions/' + fileName + '.txt',
+          waitForBytes(port, fileSize, 10).toString('utf8'),
+          err => { if (err) throw err }
+        )
+      }
+
+      // // might have to change delimiter to '\r\n'
+      // NTimeParser(port, new Readline(), data => {
+      //   fs.writeFileSync(
+      //     'sessions/' + fname + '.txt',
+      //     msg.toString('utf8'),
+      //     err => { if (err) throw err }
+      //   )
+      // }, 2)
 
       // let readingFiles = true
       // while (readingFiles) {
