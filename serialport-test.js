@@ -185,7 +185,6 @@ const manufacturerId = '2E8A'
 let portIsOpen = false
 
 let msgQueue = new byteQueue.ByteQueue()
-// let bytesAvailable = 0
 
 async function listSerialPorts() {
   await Serialport.list().then(async (ports, err) => {
@@ -198,7 +197,7 @@ async function listSerialPorts() {
 
     console.log('Ports:', ports) // DEBUG
 
-    const validPorts = [] // list of soccer tracker ports
+    const validPorts = []  // list of soccer tracker ports
     ports.forEach((device) => {
       if (device.vendorId !== undefined && device.vendorId.toUpperCase() === manufacturerId) validPorts.push(device)
     })
@@ -220,11 +219,9 @@ async function listSerialPorts() {
       //   // bytesAvailable += data.length
       // })
 
-      port.pipe(new ByteLength({length: 1})).on('data', data => {
+      port.pipe(new ByteLength({ length: 1 })).on('data', data => {
         msgQueue.push(data.toString('utf8'))
-        console.log(msgQueue.queue.join(''))
-        // console.log(msgQueue)
-        // bytesAvailable += data.length
+        // console.log(msgQueue.queue.length, msgQueue.queue.join(''))
       })
 
       port.on('open', () => {
@@ -232,13 +229,12 @@ async function listSerialPorts() {
       })
       port.write('flash\n')
       // await sleep(4000)
-      console.log('Message: ', await msgQueue.waitForBytes(4))
+      await msgQueue.waitForBytes(4)
 
       document.getElementById('error').innerHTML = 'Port has connected and flashed' // debug
       port.write('sendfiles\n')
 
-      // numFiles = await msgQueue.waitForLine()  // number of files
-      numFiles = Number(await msgQueue.waitForLine())  // number of files
+      let numFiles = Number(await msgQueue.waitForLine())  // number of files
       console.log('Number of files: ', numFiles)
       if (!fs.existsSync('sessions')) {
         fs.mkdirSync('sessions')
@@ -251,14 +247,14 @@ async function listSerialPorts() {
         let fileSize = Number(await msgQueue.waitForLine())
         console.log('File size: ', fileSize)
         let filePath = `sessions/${fileName}.bin`
+        let fileData = await msgQueue.waitForBytes(fileSize)
         if (fs.existsSync(filePath)) {
           console.log(`File ${fileName} already exists`)
-          await msgQueue.waitForBytes(fileSize)
         } else {
           let file = fs.openSync(filePath, 'w')
           fs.writeSync(
             file,
-            await msgQueue.waitForBytes(fileSize),
+            fileData,
           )
           console.log(`File ${fileName} written`)
         }
