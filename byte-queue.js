@@ -47,12 +47,14 @@
 //     }
 // }
 
-module.exports.ByteQueue = class ByteQueue {
-    constructor(){
+const { sleep } = require('./sleep')
+
+module.exports.ByteQueue = class ByteQueue {  // most recent char last
+    constructor() {
         this.queue = []
     }
 
-    async push(c) {
+    push(c) {
         for (let i = 0; i < c.length; ++i)
             this.queue.push(c[i])
     }
@@ -66,8 +68,46 @@ module.exports.ByteQueue = class ByteQueue {
 
     async waitForBytes(n) {
         let res = ''
-        while (n > this.queue.length);
+        while (n > this.queue.length) await sleep(10)
         for (let i = 0; i < n; ++i) res += this.queue.shift()
+        return res
+    }
+
+    get bytesAvailable() {
+        return this.queue.length
+    }
+
+    async waitForChar(c) {
+        let res = ''
+        while (!(this.queue.includes(c))) await sleep(10)
+        for (let i = 0; i < this.queue.length; ++i) {
+            if (this.queue[0] === c) {
+                res += this.queue.shift()
+                break
+            } else {
+                res += this.queue.shift()
+            }
+        }
+        return res
+    }
+
+    async waitForLine() { return await this.waitForString('\r\n') }
+
+    // async waitForLine() { return await this.waitForChar('\n') }
+
+    async waitForString(s) {
+        let res = ''
+        let found = undefined
+        while (found === undefined) {
+            for (let i = 0; i < this.queue.length-s.length+1; ++i) {
+                if (this.queue.slice(i, i+s.length).join('') === s) {
+                    found = i
+                    break
+                }
+            }
+            if (found === undefined) await sleep(10)
+        }
+        for (let i = 0; i < found+s.length; ++i) res += this.queue.shift()
         return res
     }
 }

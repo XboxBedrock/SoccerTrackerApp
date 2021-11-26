@@ -2,12 +2,12 @@ const Serialport = require('serialport/packages/serialport')
 const ByteLength = require('serialport/packages/parser-byte-length')
 const Readline = require('serialport/packages/parser-readline')
 const tableify = require('tableify')
+const { spawn } = require('child_process')
 const fs = require('fs')
-const { parse } = require('path')
-const { throws } = require('assert')
 
 const MANUFACTURER_ID = '2E8A'
 let portIsOpen = false
+let port
 
 class NTimeParser {
   constructor(port, parser, callback, maxUses) {
@@ -15,8 +15,7 @@ class NTimeParser {
     this.numUses = 0
     parser.on('data', data => {
       callback(data)
-      this.numUses++
-      if (this.numUses === maxUses) {
+      if (++this.numUses === maxUses) {
         this.parser.removeAllListeners()
       }
     })
@@ -33,8 +32,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
-function waitForBytes(port, numBytes, sleepTime, timeout = 0) {
+async function waitForBytes(port, numBytes, sleepTime, timeout = 0) {
   let data
   let timeElapsed = 0
   while (true) {
@@ -50,7 +48,7 @@ function waitForBytes(port, numBytes, sleepTime, timeout = 0) {
   }
 }
 
-function waitForLine(port, sleepTime, timeout = 0) {
+async function waitForLine(port, sleepTime, timeout = 0) {
   let dataSoFar
   let newData
   let timeElapsed = 0
@@ -70,6 +68,13 @@ function waitForLine(port, sleepTime, timeout = 0) {
   }
 }
 
+function writeToPort(pathToPort, data) {
+  if (data[data.length - 1] !== '\n') {
+    throw new Error('writeToPort: data must end with a newline')
+  }
+  spawn('python3', ['send-to-serial.py', pathToPort, data])
+}
+
 async function listSerialPorts() {
   await Serialport.list().then(async (ports, err) => {
     if (err) {
@@ -82,8 +87,10 @@ async function listSerialPorts() {
     console.log('Ports:', ports) // DEBUG
 
     const validPorts = [] // list of soccer tracker ports
-    ports.forEach((device) => {
-      if (device.vendorId === MANUFACTURER_ID) validPorts.push(device)
+    ports.forEach(device => {
+      if (device.vendorId !== undefined && device.vendorId.toUpperCase() === MANUFACTURER_ID) {
+        validPorts.push(device)
+      }
     })
 
     if (validPorts.length === 0) { //
@@ -93,11 +100,29 @@ async function listSerialPorts() {
         'More than one compatible device found.'
     } else {
       portIsOpen = true
-      let port = new Serialport(validPorts[0].path, {
+      port = new Serialport(validPorts[0].path, {
         baudRate: 9600,
-        autoOpen: true
+        autoOpen: true,
+      }, err => {
+        console.log('Error opening port:', err)
       })
-      port.write('flash\n')
+      // port.setEncoding('utf-8')
+      console.log('port:', validPorts[0]) // DEBUG
+      console.log(port) // DEBUG
+      await sleep(2000)
+      console.log(port.isOpen) // DEBUG
+      port.on('open', () => { // DEBUG
+        console.log('open')
+        if (err) {
+          document.getElementById('error').textContent = err.message
+          return
+        }
+      })
+
+      // spawn('python3', ['send-to-serial.py', 'flash\n'])
+      writeToPort(port.path, 'flash\n')
+      // port.write('flash\n', 'utf-8', err => {console.log(err)})
+      console.log('flash sent') // DEBUG
       console.log(waitForBytes(port, 4, 10))
 
       // const parser = port.pipe(new ByteLength({length: 4}))
@@ -110,19 +135,22 @@ async function listSerialPorts() {
       // })
 
       document.getElementById('error').innerHTML = 'Port has connected and flashed' // debug
-      port.write('sendfiles\n')
+      // port.write('sendfiles\n')
 
-      numFiles = Number(waitForLine(port, 10))  // number of files
-      for (let i = 0; i < numFiles; i++) {
-        let fileName = waitForLine(port, 10)
-        fileName = fileName.toString.slice(0, -1)
-        let fileSize = Number(waitForLine(port, 10))
-        fs.writeFileSync(
-          'sessions/' + fileName + '.txt',
-          waitForBytes(port, fileSize, 10).toString('utf8'),
-          err => { if (err) throw err }
-        )
-      }
+      // numFiles = Number(waitForLine(port, 10).data)  // number of files
+      // for (let i = 0; i < numFiles; i++) {
+      //   let fileName = waitForLine(port, 10).data.toString.slice(0, -1)
+      //   let fileSize = Number(waitForLine(port, 10).data)
+      //   fs.writeFileSync(
+      //     'sessions/' + fileName + '.txt',
+      //     waitForBytes(port, fileSize, 10)
+      //   )
+      // }
+
+
+
+
+
 
       // // might have to change delimiter to '\r\n'
       // NTimeParser(port, new Readline(), data => {
