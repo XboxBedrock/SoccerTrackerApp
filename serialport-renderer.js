@@ -37,7 +37,7 @@ async function listSerialPorts() {
       document.getElementById('error').textContent = err.message
       return
     } else {
-      document.getElementById('error').textContent = ''
+      document.getElementById('error').textContent = 'Connecting ...'
     }
 
     console.log('Ports:', ports) // DEBUG
@@ -75,7 +75,7 @@ async function listSerialPorts() {
       // await sleep(4000)
       await msgQueue.waitForBytes(4)
 
-      document.getElementById('error').innerHTML = 'Port has connected and flashed' // debug
+      document.getElementById('error').innerHTML = 'Connected!' // debug
       port.write('sendfiles\n')
 
       let numFiles = Number(await msgQueue.waitForLine())  // number of files
@@ -107,7 +107,7 @@ async function listSerialPorts() {
       window.location.href = 'sessions.html'
     }
 
-    document.getElementById('ports').innerHTML = tableify(validPorts) // DEBUG
+    // document.getElementById('ports').innerHTML = tableify(validPorts) // DEBUG
   })
 }
 

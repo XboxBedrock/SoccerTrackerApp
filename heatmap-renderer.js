@@ -80,6 +80,7 @@ function getLocations(readings) {
     let velocity = { x: 0, y: 0, z: 0 }
     for (let i = 0; i < readings.length; ++i) {
         madgwick.update(...readings[i])
+        console.log(readings[i])
         let ax_local, ay_local, az_local
         [ax_local, ay_local, az_local] = readings[i].slice(3, 6)
         let q = madgwick.getQuaternion()
