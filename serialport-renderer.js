@@ -7,9 +7,10 @@ const { sleep } = require('./sleep')
 // const noiseFilter = require('./noise-filter')
 
 const manufacturerId = '2E8A'
-let portIsOpen = false
 
 let msgQueue = new ByteQueue()
+
+let portIsOpen = false
 
 function formatTime(date) {
   let month = date.getMonth() + 1
@@ -102,6 +103,8 @@ async function listSerialPorts() {
 
         console.log(`File ${fileName} written`)
       }
+
+      window.location.href = 'sessions.html'
     }
 
     document.getElementById('ports').innerHTML = tableify(validPorts) // DEBUG

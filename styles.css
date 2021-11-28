@@ -18,6 +18,51 @@ body {
     color: #e3e3e3;
 }
 
+.sessionbutton {
+    padding:10px 0px 10px 0px;
+    font-family: 'Manrope', sans-serif;
+    border: none;
+    background-color: greenyellow;
+    width: 60%;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    display:inline-block;
+    margin: auto;
+}
+.buttondiv {
+    padding:0px 0px 5px 0px;
+    margin: auto;
+    -ms-transform: translateX(10%);
+    transform: translateX(10%);
+}
+.sessionbutton:hover {
+    width: 60%;
+    background-color: rgb(0, 255, 157);
+    transition: all .25s linear;
+}
+
+.delbutton {
+    padding:10px 0px 10px 0px;
+    font-family: 'Manrope', sans-serif;
+    border: none;
+    background-color: red;
+    width: 20%;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    display:inline-block;
+    margin: auto;
+  }
+.delbutton:hover {
+    width: 20%;
+    background-color: rgb(255, 136, 0);
+    transition: all .25s linear;
+}
+
+
+
+
 .error {
     font-family: 'Manrope', sans-serif;
     font-size: 70px;
@@ -38,7 +83,7 @@ body {
     justify-content: center;
 }
 
-.button {
+.titlebutton {
     min-width: 300px;
     min-height: 60px;
     font-family: 'Manrope', sans-serif;
@@ -62,7 +107,7 @@ body {
     right: 50%;
 }
 
-button::before {
+titlebutton::before {
     content: '';
     border-radius: 1000px;
     min-width: calc(300px + 12px);
@@ -77,33 +122,19 @@ button::before {
     transition: all .3s ease-in-out 0s;
 }
 
-.button:hover,
-.button:focus {
+.titlebutton:hover,
+.titlebutton:focus {
     color: #313133;
     transform: translateY(-6px);
 }
 
-button:hover::before,
-button:focus::before {
+titlebutton:hover::before,
+titlebutton:focus::before {
     opacity: 1;
 }
 
-button::after {
-    content: '';
-    width: 30px;
-    height: 30px;
-    border-radius: 100%;
-    border: 6px solid #00ffff;
-    position: absolute;
-    z-index: -1;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: ring 1.5s infinite;
-}
-
-button:hover::after,
-button:focus::after {
+titlebutton:hover::after,
+titlebutton:focus::after {
     animation: none;
     display: none;
 }

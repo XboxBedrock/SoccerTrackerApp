@@ -26,16 +26,17 @@ function rotateVector(vec, q) {
 }
 
 function addVectors(...vecs) {
-    res = { x: 0, y: 0, z: 0 }
+    let res = { x: 0, y: 0, z: 0 }
     for (let i = 0; i < vecs.length; i++) {
         res.x += vecs[i].x
         res.y += vecs[i].y
         res.z += vecs[i].z
     }
+    return res
 }
 
 function getLocations(readings) {
-    locations = new Array(readings.length+1)
+    let locations = new Array(readings.length+1)
     locations[0] = { x: 0, y: 0, z: 0 }
 
     const madgwick = new AHRS({
@@ -45,12 +46,13 @@ function getLocations(readings) {
         doInitialisation: true
     })
 
-    velocity = { x: 0, y: 0, z: 0 }
+    let velocity = { x: 0, y: 0, z: 0 }
     for (let i = 0; i < readings.length; ++i) {
         madgwick.update(...readings[i])
+        let ax_local, ay_local, az_local
         [ax_local, ay_local, az_local] = readings.slice(3, 6)
-        q = madgwick.getQuaternion()
-        acceleration = addVectors(
+        let q = madgwick.getQuaternion()
+        let acceleration = addVectors(
             rotateVector({ x: ax_local, y: 0, z: 0 }, q),
             rotateVector({ x: 0, y: ay_local, z: 0 }, q),
             rotateVector({ x: 0, y: 0, z: az_local }, q)
