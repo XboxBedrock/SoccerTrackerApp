@@ -5,11 +5,12 @@ for (const i of files) {
 }
 
 function goToSession(session) {
-    console.log(`go to ${session}`);
+    // console.log(`go to ${session}`);
     window.location.href = `./session-template.html?session=${session}`;
 }
 
 function delSession(session) {
-    console.log(`del ${session}`);
-    // window.location.href = './sessions/session-template.html';
+    // console.log(`del ${session}`);
+    fs.unlinkSync(`./sessions/${session}.txt`)
+    window.location.reload();
 }

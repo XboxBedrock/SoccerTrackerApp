@@ -3,16 +3,16 @@ const AHRS = require("ahrs")
 const struct = require('python-struct')
 const fs = require('fs');
 const urlParams = new URLSearchParams(window.location.search);
-const session = urlParams.get('session')
-const sessionTime = `./sessions/${session}.txt`
+const sessionTime = urlParams.get('session')
+const sessionFilename = `./sessions/${sessionTime}.txt`
 
 const refreshRate = 20
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-console.log(sessionTime)
+console.log(sessionFilename)
 // console.log(document.getElementById('heatmap-canvas').getContext('2d'))  // debug
-document.getElementById("title").innerHTML +=  " " + session
-document.getElementById("titleshow").innerHTML +=  " " + session
+document.getElementById("title").innerHTML +=  " " + sessionTime
+document.getElementById("titleshow").innerHTML +=  " " + sessionTime
 
 let heat = simpleheat(document.getElementById('heatmap-canvas'));
 
@@ -123,7 +123,7 @@ function toBase256(n) {
     return res
 }
 
-const sessionFile = fs.openSync(sessionTime, 'r')
+const sessionFile = fs.openSync(sessionFilename, 'r')
 const data = fs.readFileSync(sessionFile).toString()
 readings = []
 for (let i = 0; i < data.length; i += 48) {

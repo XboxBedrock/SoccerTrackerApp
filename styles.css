@@ -22,7 +22,7 @@ body {
     padding:10px 0px 10px 0px;
     font-family: 'Manrope', sans-serif;
     border: none;
-    background-color: greenyellow;
+    background-color: rgb(153, 213, 233);
     width: 60%;
     text-align: center;
     text-decoration: none;
@@ -38,7 +38,7 @@ body {
 }
 .sessionbutton:hover {
     width: 60%;
-    background-color: rgb(0, 255, 157);
+    background-color: rgb(35, 233, 98);
     transition: all .25s linear;
 }
 
@@ -46,17 +46,17 @@ body {
     padding:10px 0px 10px 0px;
     font-family: 'Manrope', sans-serif;
     border: none;
-    background-color: red;
+    background-color: rgb(153, 213, 233);
     width: 20%;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
     display:inline-block;
     margin: auto;
-  }
+}
 .delbutton:hover {
     width: 20%;
-    background-color: rgb(255, 136, 0);
+    background-color: #cc1420;
     transition: all .25s linear;
 }
 
