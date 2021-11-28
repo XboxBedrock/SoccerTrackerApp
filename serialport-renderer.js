@@ -60,11 +60,11 @@ async function listSerialPorts() {
         autoOpen: true
       })
 
-      let debugQueue = new ByteQueue()
+      // let debugQueue = new ByteQueue()
       port.pipe(new ByteLength({ length: 1 })).on('data', data => {
         msgQueue.push(data.toString('utf8'))
-        debugQueue.push(data.toString('utf8'))
-        console.log(debugQueue.queue.length, debugQueue.queue.join(''))
+        // debugQueue.push(data.toString('utf8'))
+        // console.log(debugQueue.queue.length, debugQueue.queue.join(''))
       })
 
       port.on('open', () => {
@@ -88,10 +88,10 @@ async function listSerialPorts() {
         let fileName = timeNow + '-' + (await msgQueue.waitForLine()).slice(0, -2)
         console.log('File name: ', fileName)
 
-        let fileSize = Number(await msgQueue.waitForLine())
-        console.log('File size: ', fileSize)
+        // let fileSize = Number(await msgQueue.waitForLine())
+        // console.log('File size: ', fileSize)
 
-        let fileData = await msgQueue.waitForBytes(fileSize)
+        let fileData = (await msgQueue.waitForLine()).slice(0, -2)
 
         let file = fs.openSync(`sessions/${fileName}.txt`, 'w')
         fs.writeSync(
