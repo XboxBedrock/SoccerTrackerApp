@@ -6,7 +6,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const sessionTime = urlParams.get('session')
 const sessionFilename = `./sessions/${sessionTime}.txt`
 
-const refreshRate = 20
+const refreshRate = 5
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 console.log(sessionFilename)
@@ -80,61 +80,74 @@ function getLocations(readings) {
     let velocity = { x: 0, y: 0, z: 0 }
     for (let i = 0; i < readings.length; ++i) {
         madgwick.update(...readings[i])
-        console.log(readings[i])
-        let ax_local, ay_local, az_local
-        [ax_local, ay_local, az_local] = readings[i].slice(3, 6)
+
+        let [ax_local, ay_local, az_local] = readings[i].slice(3, 6)
+
+        // rotate the accelerometer vector from the body frame to the world frame
         let q = madgwick.getQuaternion()
-        // console.log(q)
         let acceleration = addVectors(
             rotateVector({ x: ax_local, y: 0, z: 0 }, q),
             rotateVector({ x: 0, y: ay_local, z: 0 }, q),
             rotateVector({ x: 0, y: 0, z: az_local }, q)
         )
-        console.log(ax_local, ay_local, az_local)
+
+        // update velocity
         velocity.x += acceleration.x / refreshRate
         velocity.y += acceleration.y / refreshRate
         velocity.z += acceleration.z / refreshRate
+
+        // update location
         locations[i+1] = {
-            x: locations[i].x + velocity.x / refreshRate,
-            y: locations[i].y + velocity.y / refreshRate,
-            z: locations[i].z + velocity.z / refreshRate
+            x: locations[i].x + velocity.x / refreshRate + 0.5*acceleration.x*Math.pow(refreshRate, -2),
+            y: locations[i].y + velocity.y / refreshRate + 0.5*acceleration.y*Math.pow(refreshRate, -2),
+            z: locations[i].z + velocity.z / refreshRate + 0.5*acceleration.z*Math.pow(refreshRate, -2)
         }
     }
-    for (let i = 0; i < locations.length; ++i) {
-        locations[i] = [locations[i].x*1000, locations[i].y*1000, 1]
+
+    for (let i = 0; i < locations.length; ++i) {  // convert to simpleheat format
+        locations[i] = [locations[i].x, locations[i].y, 1]
     }
+
     return locations
 }
 
 function fromBase64(n) {
     n = n.split('').reverse().join('')
-    res = 0
-    for (let i = 0; i < n.length; ++i) res += alphabet.indexOf(n[i])*Math.pow(64, i)
+    res = BigInt(0)
+    for (let i = 0; i < n.length; ++i) res += BigInt(alphabet.indexOf(n[i])*Math.pow(64, i))
     return res
 }
 
 function toBase256(n) {
-    let res = []
-    while (n > 0) {
-        res.push(n % 256)
-        n = Math.floor(n / 256)
+    let res = Buffer.alloc(36)
+    let i = 0
+    while (n > BigInt(0)) {
+        res[i++] = Number(n % BigInt(256))
+        n = n / BigInt(256)
     }
     res = res.reverse()
-    while (res.length < 9) res.unshift(0)
+    // while (res.length < 36) res.unshift(0)
     return res
 }
 
 const sessionFile = fs.openSync(sessionFilename, 'r')
 const data = fs.readFileSync(sessionFile).toString()
-readings = []
+let readings = []
 for (let i = 0; i < data.length; i += 48) {
-    c = ''
-    // console.log(data.substring(i, i+48), fromBase64(data.substring(i, i+48)), toBase256(fromBase64(data.substring(i, i+48))))
-    for (const n of toBase256(fromBase64(data.substring(i, i+48)))) {
-        c += String.fromCharCode(n)
-        // console.log(c.length, c)
-    }
-    readings.push(struct.unpack('<fffffffff', Buffer.from(c)))
+    // c = Buffer.from(data.slice(i, i+48), 'base64')
+    // while (c.length < 36) c = Buffer(0) + c
+    // console.log(c)
+
+    let chunk = data.slice(i, i+48)
+
+    console.log(  // DEBUG
+        i/48+1,
+        fromBase64(chunk),
+        toBase256(fromBase64(chunk)),
+        struct.unpack('<fffffffff', toBase256(fromBase64(chunk)))
+    )
+
+    readings.push(struct.unpack('<fffffffff', toBase256(fromBase64(chunk))))
 }
 
 points = getLocations(readings)
