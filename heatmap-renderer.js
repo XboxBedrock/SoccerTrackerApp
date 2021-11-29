@@ -1,4 +1,4 @@
-const simpleheat = require('./simpleheat')
+const simpleheat = require('simpleheat')
 const AHRS = require("ahrs")
 const struct = require('python-struct')
 const fs = require('fs');
