@@ -67,7 +67,7 @@ function addVectors(...vecs) {
 }
 
 function getLocations(readings) {
-    let locations = new Array(readings.length+1)
+    let locations = new Array(readings.length)
     locations[0] = { x: 0, y: 0, z: 0 }
 
     const madgwick = new AHRS({
@@ -78,7 +78,7 @@ function getLocations(readings) {
     })
 
     let velocity = { x: 0, y: 0, z: 0 }
-    for (let i = 0; i < readings.length; ++i) {
+    for (let i = 1; i < readings.length; ++i) {
         madgwick.update(...readings[i])
 
         let [ax_local, ay_local, az_local] = readings[i].slice(3, 6)
@@ -97,15 +97,15 @@ function getLocations(readings) {
         velocity.z += acceleration.z / refreshRate
 
         // update location
-        locations[i+1] = {
-            x: locations[i].x + velocity.x / refreshRate + 0.5*acceleration.x*Math.pow(refreshRate, -2),
-            y: locations[i].y + velocity.y / refreshRate + 0.5*acceleration.y*Math.pow(refreshRate, -2),
-            z: locations[i].z + velocity.z / refreshRate + 0.5*acceleration.z*Math.pow(refreshRate, -2)
+        locations[i] = {
+            x: locations[i-1].x + velocity.x / refreshRate + 0.5*acceleration.x*Math.pow(refreshRate, -2),
+            y: locations[i-1].y + velocity.y / refreshRate + 0.5*acceleration.y*Math.pow(refreshRate, -2),
+            z: locations[i-1].z + velocity.z / refreshRate + 0.5*acceleration.z*Math.pow(refreshRate, -2)
         }
     }
 
     for (let i = 0; i < locations.length; ++i) {  // convert to simpleheat format
-        locations[i] = [locations[i].x, locations[i].y, 1]
+        locations[i] = [locations[i].x, locations[i].y, 0.3]
     }
 
     return locations
@@ -156,4 +156,5 @@ console.log(points)
 
 // heat.max(max)
 heat.data(points)
+heat.radius(10, 20)
 heat.draw()
