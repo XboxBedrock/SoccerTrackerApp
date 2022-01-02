@@ -6,7 +6,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const sessionTime = urlParams.get('session')
 const sessionFilename = `./sessions/${sessionTime}.txt`
 
-const refreshRate = 5
+const sampleFreq = 20
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 console.log(sessionFilename)
@@ -71,7 +71,7 @@ function getLocations(readings) {
     locations[0] = { x: 0, y: 0, z: 0 }
 
     const madgwick = new AHRS({
-        sampleInterval: refreshRate,
+        sampleInterval: sampleFreq,
         algorithm: "Madgwick",
         beta: 0.4,
         doInitialisation: true
@@ -92,20 +92,20 @@ function getLocations(readings) {
         )
 
         // update velocity
-        velocity.x += acceleration.x / refreshRate
-        velocity.y += acceleration.y / refreshRate
-        velocity.z += acceleration.z / refreshRate
+        velocity.x += acceleration.x / sampleFreq
+        velocity.y += acceleration.y / sampleFreq
+        velocity.z += acceleration.z / sampleFreq
 
         // update location
         locations[i] = {
-            x: locations[i-1].x + velocity.x / refreshRate + 0.5*acceleration.x*Math.pow(refreshRate, -2),
-            y: locations[i-1].y + velocity.y / refreshRate + 0.5*acceleration.y*Math.pow(refreshRate, -2),
-            z: locations[i-1].z + velocity.z / refreshRate + 0.5*acceleration.z*Math.pow(refreshRate, -2)
+            x: locations[i-1].x + velocity.x / sampleFreq + 0.5*acceleration.x*Math.pow(sampleFreq, -2),
+            y: locations[i-1].y + velocity.y / sampleFreq + 0.5*acceleration.y*Math.pow(sampleFreq, -2),
+            z: locations[i-1].z + velocity.z / sampleFreq + 0.5*acceleration.z*Math.pow(sampleFreq, -2)
         }
     }
 
     for (let i = 0; i < locations.length; ++i) {  // convert to simpleheat format
-        locations[i] = [locations[i].x, locations[i].y, 0.3]
+        locations[i] = [locations[i].x+450, locations[i].y+250, 1]
     }
 
     return locations
@@ -123,7 +123,7 @@ function toBase256(n) {
     let i = 0
     while (n > BigInt(0)) {
         res[i++] = Number(n % BigInt(256))
-        n = n / BigInt(256)
+        n /= BigInt(256)
     }
     res = res.reverse()
     // while (res.length < 36) res.unshift(0)
