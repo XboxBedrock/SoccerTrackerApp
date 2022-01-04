@@ -66,6 +66,10 @@ function addVectors(...vecs) {
     return res
 }
 
+function magnitude(vec) {
+    return Math.sqrt(Math.pow(vec.x**2) + Math.pow(vec.y**2) + Math.pow(vec.z**2))
+}
+
 function getLocations(readings) {
     let locations = new Array(readings.length)
     locations[0] = { x: 0, y: 0, z: 0 }
@@ -77,6 +81,7 @@ function getLocations(readings) {
         doInitialisation: true
     })
 
+    let mx_a = 0, mx_v = 0
     let velocity = { x: 0, y: 0, z: 0 }
     for (let i = 1; i < readings.length; ++i) {
         madgwick.update(...readings[i])
@@ -96,6 +101,10 @@ function getLocations(readings) {
         velocity.y += acceleration.y / sampleFreq
         velocity.z += acceleration.z / sampleFreq
 
+        let v = magnitude(velocity), a = magnitude(acceleration)
+        if (mx_v < v) mx_v = v
+        if (mx_a < a) mx_a = a
+
         // update location
         locations[i] = {
             x: locations[i-1].x + velocity.x / sampleFreq + 0.5*acceleration.x*Math.pow(sampleFreq, -2),
@@ -104,8 +113,11 @@ function getLocations(readings) {
         }
     }
 
+    document.getElementById("acceleration").innerHTML +=  " " + mx_a
+    document.getElementById("velocity").innerHTML +=  " " + mx_v
+
     for (let i = 0; i < locations.length; ++i) {  // convert to simpleheat format
-        locations[i] = [locations[i].x+450, locations[i].y+250, 1]
+        locations[i] = [locations[i].x*500+450, locations[i].y*500+250, 1]
     }
 
     return locations
@@ -131,24 +143,33 @@ function toBase256(n) {
 }
 
 const sessionFile = fs.openSync(sessionFilename, 'r')
-const data = fs.readFileSync(sessionFile).toString()
+const data = fs.readFileSync(sessionFile).toString().split(' ')
 let readings = []
-for (let i = 0; i < data.length; i += 48) {
-    // c = Buffer.from(data.slice(i, i+48), 'base64')
-    // while (c.length < 36) c = Buffer(0) + c
-    // console.log(c)
-
-    let chunk = data.slice(i, i+48)
-
-    console.log(  // DEBUG
-        i/48+1,
-        fromBase64(chunk),
-        toBase256(fromBase64(chunk)),
-        struct.unpack('<fffffffff', toBase256(fromBase64(chunk)))
-    )
-
-    readings.push(struct.unpack('<fffffffff', toBase256(fromBase64(chunk))))
+for (let i = 0; i < data.length/9; ++i) {
+    let arr = []
+    for (let j = 0; j < 9; ++j)
+        arr.push(Number(data[9*i+j]))
+    readings.push(arr)
 }
+
+// for (let i = 0; i < data.length; i += 48) {
+//     // c = Buffer.from(data.slice(i, i+48), 'base64')
+//     // while (c.length < 36) c = Buffer(0) + c
+//     // console.log(c)
+
+//     let chunk = data.slice(i, i+48)
+
+//     console.log(  // DEBUG
+//         i/48+1,
+//         fromBase64(chunk),
+//         toBase256(fromBase64(chunk)),
+//         struct.unpack('<fffffffff', toBase256(fromBase64(chunk)))
+//     )
+
+//     readings.push(struct.unpack('<fffffffff', toBase256(fromBase64(chunk))))
+// }
+
+
 
 points = getLocations(readings)
 
