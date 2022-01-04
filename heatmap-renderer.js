@@ -67,7 +67,7 @@ function addVectors(...vecs) {
 }
 
 function magnitude(vec) {
-    return Math.sqrt(Math.pow(vec.x**2) + Math.pow(vec.y**2) + Math.pow(vec.z**2))
+    return Math.sqrt(Math.pow(vec.x, 2) + Math.pow(vec.y, 2) + Math.pow(vec.z, 2))
 }
 
 function getLocations(readings) {
